@@ -1,0 +1,13 @@
+# Render Blueprint — deploys GRAPNEL as one free web service.
+# Usage: push this repo to GitHub, then Render → New → Blueprint → pick repo.
+services:
+  - type: web
+    name: grapnel
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: "22"

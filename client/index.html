@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0d0a1a" />
+    <title>THE KILOWATT SAGA — starring GRAPNEL</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: #0d0a1a;
+        overflow: hidden;
+        height: 100%;
+        user-select: none;
+        font-family: "Segoe UI", system-ui, sans-serif;
+      }
+      canvas {
+        display: block;
+      }
+      #reticle {
+        position: fixed;
+        left: 50%;
+        top: 50%;
+        width: 10px;
+        height: 10px;
+        margin: -5px 0 0 -5px;
+        border: 2px solid #00000055;
+        border-radius: 50%;
+        pointer-events: none;
+        transition: border-color 80ms, transform 80ms;
+      }
+      #hud {
+        position: fixed;
+        left: 16px;
+        bottom: 14px;
+        color: #1d2733;
+        font-size: 14px;
+        line-height: 1.5;
+        pointer-events: none;
+        text-shadow: 0 1px 3px #ffffffaa;
+      }
+      #speed {
+        position: fixed;
+        right: 16px;
+        bottom: 14px;
+        color: #7a3c00;
+        font-size: 22px;
+        font-weight: 600;
+        pointer-events: none;
+        text-shadow: 0 1px 3px #ffffffaa;
+      }
+      #splash {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: #0d0a1acc;
+        color: #fff;
+        text-align: center;
+        gap: 10px;
+      }
+      #splash h1 {
+        letter-spacing: 0.35em;
+        font-weight: 300;
+        margin: 0;
+      }
+      #splash p {
+        color: #cbb8ff;
+        margin: 0;
+      }
+      #splash .hint {
+        font-size: 12px;
+        color: #8f82c4;
+        max-width: 420px;
+      }
+      #splash-controls {
+        display: flex;
+        gap: 10px;
+        margin: 14px 0 6px;
+      }
+      #roomcode {
+        width: 130px;
+        background: #1c1533;
+        border: 1px solid #4a3f75;
+        color: #ffe28a;
+        font-size: 16px;
+        letter-spacing: 0.2em;
+        text-align: center;
+        text-transform: uppercase;
+        padding: 10px;
+        border-radius: 4px;
+        outline: none;
+      }
+      #splash-controls button {
+        background: #38e5ff;
+        border: none;
+        color: #0d0a1a;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        padding: 10px 18px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      #btn-quick {
+        background: #4a3f75 !important;
+        color: #e9e2ff !important;
+      }
+      #room {
+        position: fixed;
+        bottom: 14px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: #2b3a4c;
+        font-size: 13px;
+        letter-spacing: 0.18em;
+        cursor: pointer;
+        text-shadow: 0 1px 4px #ffffffaa;
+      }
+      #objective {
+        position: fixed;
+        top: 14px;
+        left: 50%;
+        transform: translateX(-50%);
+        color: #0d4f5c;
+        font-size: 15px;
+        letter-spacing: 0.25em;
+        text-transform: uppercase;
+        pointer-events: none;
+        text-shadow: 0 1px 4px #ffffffaa;
+      }
+      #shards {
+        position: fixed;
+        top: 14px;
+        right: 16px;
+        color: #6b4e00;
+        font-size: 15px;
+        letter-spacing: 0.12em;
+        pointer-events: none;
+        text-shadow: 0 1px 4px #ffffffaa;
+      }
+      #toast {
+        position: fixed;
+        bottom: 84px;
+        left: 50%;
+        transform: translateX(-50%);
+        max-width: 560px;
+        text-align: center;
+        color: #14202e;
+        font-size: 16px;
+        font-style: italic;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 500ms;
+        text-shadow: 0 1px 4px #ffffffaa;
+      }
+      #finale {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        color: #fff;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 1200ms;
+        background: radial-gradient(ellipse at center, #38e5ff22 0%, transparent 60%);
+      }
+      #finale h1 {
+        letter-spacing: 0.3em;
+        font-weight: 300;
+      }
+      #finale p {
+        color: #cbb8ff;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="reticle"></div>
+    <div id="objective"></div>
+    <div id="shards"></div>
+    <div id="toast"></div>
+    <div id="finale"></div>
+    <div id="hud">
+      WASD move &nbsp;·&nbsp; SPACE jump &nbsp;·&nbsp; <b>hold LMB</b> grapple, release to let go
+      &nbsp;·&nbsp; Q/E reel
+    </div>
+    <div id="speed">0</div>
+    <div id="splash">
+      <h1>THE KILOWATT SAGA</h1>
+      <p>ACT I · BLACKOUT PROTOCOL — starring GRAPNEL</p>
+      <div id="splash-controls">
+        <input id="roomcode" maxlength="8" placeholder="ROOM CODE" autocomplete="off" spellcheck="false" />
+        <button id="btn-squad">SQUAD ROOM</button>
+        <button id="btn-quick">QUICK PLAY</button>
+      </div>
+      <p class="hint">
+        squad: enter a code (or leave blank for a new one) and share it ·
+        quick: join the public match
+      </p>
+    </div>
+    <div id="room" title="click to copy the share link"></div>
+    <script type="module" src="/main.ts"></script>
+  </body>
+</html>
